@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  DIRETOR
+  PROFESSOR
+  ALUNO
+}
+
+model Escola {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  slug      String   @unique
+  ativa     Boolean  @default(true)
+
+  usuarios  Usuario[]
+  cursos    Curso[]
+  turmas    Turma[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@map("escolas")
+}
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  tenantId  Int
+  escola    Escola  @relation(fields: [tenantId], references: [id])
+
+  nome         String
+  email        String
+  senha        String
+  documento    String
+  role         Role
+  foto_perfil  String?
+  data_nascimento DateTime @db.Date
+
+  turmasComoProfessor ProfessorNaTurma[]
+  turmasComoAluno     AlunoNaTurma[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@unique([email, tenantId, documento])
+  @@map("usuarios")
+}
+
+model Curso {
+  id        Int      @id @default(autoincrement())
+  tenantId  Int
+  escola    Escola  @relation(fields: [tenantId], references: [id])
+
+  nome        String
+  descricao   String?
+
+  turmas    Turma[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@map("cursos")
+}
+
+model Turma {
+  id        Int      @id @default(autoincrement())
+  tenantId  Int
+  escola    Escola  @relation(fields: [tenantId], references: [id])
+
+  cursoId  Int
+  curso    Curso  @relation(fields: [cursoId], references: [id])
+
+  nome     String
+  ano      Int
+
+  professores ProfessorNaTurma[]
+  alunos       AlunoNaTurma[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@map("turmas")
+}
+
+model ProfessorNaTurma {
+  id          Int      @id @default(autoincrement())
+  tenantId    Int
+
+  professorId Int
+  turmaId     Int
+
+  professor Usuario @relation(fields: [professorId], references: [id])
+  turma      Turma   @relation(fields: [turmaId], references: [id])
+
+  createdAt DateTime @default(now())
+  deletedAt DateTime?
+
+  @@unique([professorId, turmaId])
+  @@map("professor_na_turma")
+}
+
+model AlunoNaTurma {
+  id        Int      @id @default(autoincrement())
+  tenantId  Int
+
+  alunoId  Int
+  turmaId  Int
+
+  aluno Usuario @relation(fields: [alunoId], references: [id])
+  turma Turma   @relation(fields: [turmaId], references: [id])
+
+  createdAt DateTime @default(now())
+  deletedAt DateTime?
+
+  @@unique([alunoId, turmaId])
+  @@map("aluno_na_turma")
+}
