@@ -10,109 +10,145 @@ const pool = new Pool({
 
 const adapter = new PrismaPg(pool);
 
-const prisma = new PrismaClient({
-  adapter,
-});
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log('🌱 Iniciando seed...');
 
-  const senhaHash = await bcrypt.hash('123456', 10);
+  const senha = await bcrypt.hash('123456', 10);
 
-  const escolaAlpha = await prisma.escola.create({
+  // ESCOLA
+  const escola = await prisma.escola.create({
+    data: { nome: 'Escola Alpha', slug: 'escola-alpha' },
+  });
+
+  // ROLES
+  await prisma.role.createMany({
+    data: [
+      { nome: 'ADMIN', tenantId: escola.id },
+      { nome: 'DIRETOR', tenantId: escola.id },
+      { nome: 'PROFESSOR', tenantId: escola.id },
+      { nome: 'ALUNO', tenantId: escola.id },
+    ],
+  });
+
+  const roles = await prisma.role.findMany({ where: { tenantId: escola.id } });
+  const role = (nome: string) => roles.find(r => r.nome === nome)!;
+
+  // PERMISSÕES
+  const permissoes = await prisma.permissao.createMany({
+    data: [
+      { nome: 'criar_usuario', descricao: 'Criar usuário' },
+      { nome: 'criar_turma', descricao: 'Criar turma' },
+      { nome: 'matricular_aluno', descricao: 'Matricular aluno' },
+      { nome: 'criar_avaliacao', descricao: 'Criar avaliação' },
+      { nome: 'lancar_nota', descricao: 'Lançar nota' },
+    ],
+  });
+
+  const perms = await prisma.permissao.findMany();
+
+  for (const p of perms) {
+    await prisma.rolePermissao.create({
+      data: { roleId: role('ADMIN').id, permissaoId: p.id },
+    });
+  }
+
+  // USUÁRIOS
+  const admin = await prisma.usuario.create({
     data: {
-      nome: 'Escola Alpha',
-      slug: 'escola-alpha',
+      tenantId: escola.id,
+      roleId: role('ADMIN').id,
+      nome: 'Admin',
+      email: 'admin@alpha.com',
+      senha,
+      documento: '0001',
+      data_nascimento: new Date('1985-01-01'),
     },
   });
 
-  const escolaBeta = await prisma.escola.create({
+  const professor = await prisma.usuario.create({
     data: {
-      nome: 'Escola Beta',
-      slug: 'escola-beta',
-    },
-  });
-
-  const emailAdmin = 'admin@escola.com';
-
-  await prisma.usuario.create({
-    data: {
-      tenantId: escolaAlpha.id,
-      nome: 'Admin Alpha',
-      email: emailAdmin,
-      senha: senhaHash,
-      documento: '00000000191',
-      role: Role.ADMIN,
-      data_nascimento: new Date('1985-01-10'),
-    },
-  });
-
-  await prisma.usuario.create({
-    data: {
-      tenantId: escolaBeta.id,
-      nome: 'Admin Beta',
-      email: emailAdmin,
-      senha: senhaHash,
-      documento: '00000000272',
-      role: Role.ADMIN,
-      data_nascimento: new Date('1987-03-22'),
-    },
-  });
-
-  const professorAlpha = await prisma.usuario.create({
-    data: {
-      tenantId: escolaAlpha.id,
+      tenantId: escola.id,
+      roleId: role('PROFESSOR').id,
       nome: 'Professor João',
       email: 'joao@alpha.com',
-      senha: senhaHash,
-      documento: '11111111111',
-      role: Role.PROFESSOR,
-      data_nascimento: new Date('1990-06-15'),
+      senha,
+      documento: '0002',
+      data_nascimento: new Date('1990-01-01'),
     },
   });
 
-  const alunoAlpha = await prisma.usuario.create({
+  const aluno = await prisma.usuario.create({
     data: {
-      tenantId: escolaAlpha.id,
+      tenantId: escola.id,
+      roleId: role('ALUNO').id,
       nome: 'Aluno Maria',
       email: 'maria@alpha.com',
-      senha: senhaHash,
-      documento: '22222222222',
-      role: Role.ALUNO,
-      data_nascimento: new Date('2012-09-03'),
+      senha,
+      documento: '0003',
+      data_nascimento: new Date('2012-01-01'),
     },
   });
 
-  const cursoAlpha = await prisma.curso.create({
+  // CURSO / TURMA
+  const curso = await prisma.curso.create({
     data: {
-      tenantId: escolaAlpha.id,
+      tenantId: escola.id,
       nome: 'Ensino Fundamental',
-      descricao: 'Curso fundamental da Escola Alpha',
     },
   });
 
-  const turmaA = await prisma.turma.create({
+  const turma = await prisma.turma.create({
     data: {
-      tenantId: escolaAlpha.id,
+      tenantId: escola.id,
       nome: 'Turma A',
       ano: 2026,
-      cursoId: cursoAlpha.id,
+      cursoId: curso.id,
     },
   });
 
   await prisma.professorNaTurma.create({
     data: {
-      tenantId: escolaAlpha.id,
-      professorId: professorAlpha.id,
-      turmaId: turmaA.id,
+      tenantId: escola.id,
+      professorId: professor.id,
+      turmaId: turma.id,
     },
   });
 
   await prisma.alunoNaTurma.create({
     data: {
-      tenantId: escolaAlpha.id,
-      alunoId: alunoAlpha.id,
-      turmaId: turmaA.id,
+      tenantId: escola.id,
+      alunoId: aluno.id,
+      turmaId: turma.id,
+    },
+  });
+
+  // AVALIAÇÃO
+  const avaliacao = await prisma.avaliacao.create({
+    data: {
+      tenantId: escola.id,
+      turmaId: turma.id,
+      nome: 'Prova de Matemática',
+      data: new Date(),
+    },
+  });
+
+  const questao = await prisma.questao.create({
+    data: {
+      avaliacaoId: avaliacao.id,
+      texto: '2 + 2 = ?',
+      peso: 1,
+      opcoes: ['A) 3', 'B) 4', 'C) 5'],
+      respostaCorreta: 'B',
+    },
+  });
+
+  await prisma.resposta.create({
+    data: {
+      questaoId: questao.id,
+      alunoId: aluno.id,
+      valor: 'B',
     },
   });
 
@@ -120,9 +156,5 @@ async function main() {
 }
 
 main()
-  .catch((error) => {
-    console.error('❌ Erro ao executar seed:', error);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+  .catch(console.error)
+  .finally(() => prisma.$disconnect());

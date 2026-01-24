@@ -6,48 +6,85 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Role {
-  ADMIN
-  DIRETOR
-  PROFESSOR
-  ALUNO
-}
-
 model Escola {
-  id        Int      @id @default(autoincrement())
-  nome      String
-  slug      String   @unique
-  ativa     Boolean  @default(true)
+  id    Int     @id @default(autoincrement())
+  nome  String
+  slug  String  @unique
+  ativa Boolean @default(true)
 
-  usuarios  Usuario[]
-  cursos    Curso[]
-  turmas    Turma[]
+  usuarios Usuario[]
+  cursos   Curso[]
+  turmas   Turma[]
+  roles    Role[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   @@map("escolas")
 }
 
-model Usuario {
-  id        Int      @id @default(autoincrement())
-  tenantId  Int
-  escola    Escola  @relation(fields: [tenantId], references: [id])
+model Role {
+  id       Int @id @default(autoincrement())
+  tenantId Int
+  escola   Escola @relation(fields: [tenantId], references: [id])
 
-  nome         String
-  email        String
-  senha        String
-  documento    String
-  role         Role
-  foto_perfil  String?
+  nome       String
+  usuarios   Usuario[]
+  permissoes RolePermissao[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, nome])
+  @@map("roles")
+}
+
+model Permissao {
+  id        Int    @id @default(autoincrement())
+  nome      String @unique
+  descricao String?
+
+  roles RolePermissao[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("permissoes")
+}
+
+model RolePermissao {
+  id           Int @id @default(autoincrement())
+  roleId       Int
+  permissaoId  Int
+
+  role       Role      @relation(fields: [roleId], references: [id])
+  permissao  Permissao @relation(fields: [permissaoId], references: [id])
+
+  @@unique([roleId, permissaoId])
+  @@map("role_permissao")
+}
+
+model Usuario {
+  id       Int @id @default(autoincrement())
+  tenantId Int
+  escola   Escola @relation(fields: [tenantId], references: [id])
+
+  roleId Int
+  role   Role @relation(fields: [roleId], references: [id])
+
+  nome            String
+  email           String
+  senha           String
+  documento       String
   data_nascimento DateTime @db.Date
 
   turmasComoProfessor ProfessorNaTurma[]
   turmasComoAluno     AlunoNaTurma[]
+  respostas           Resposta[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   @@unique([email, tenantId, documento])
@@ -55,73 +92,116 @@ model Usuario {
 }
 
 model Curso {
-  id        Int      @id @default(autoincrement())
-  tenantId  Int
-  escola    Escola  @relation(fields: [tenantId], references: [id])
+  id       Int @id @default(autoincrement())
+  tenantId Int
+  escola   Escola @relation(fields: [tenantId], references: [id])
 
-  nome        String
-  descricao   String?
+  nome      String
+  descricao String?
 
-  turmas    Turma[]
+  turmas Turma[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   @@map("cursos")
 }
 
 model Turma {
-  id        Int      @id @default(autoincrement())
-  tenantId  Int
-  escola    Escola  @relation(fields: [tenantId], references: [id])
+  id       Int @id @default(autoincrement())
+  tenantId Int
+  escola   Escola @relation(fields: [tenantId], references: [id])
 
-  cursoId  Int
-  curso    Curso  @relation(fields: [cursoId], references: [id])
+  cursoId Int
+  curso   Curso @relation(fields: [cursoId], references: [id])
 
-  nome     String
-  ano      Int
+  nome String
+  ano  Int
 
   professores ProfessorNaTurma[]
-  alunos       AlunoNaTurma[]
+  alunos      AlunoNaTurma[]
+  avaliacoes  Avaliacao[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   @@map("turmas")
 }
 
 model ProfessorNaTurma {
-  id          Int      @id @default(autoincrement())
-  tenantId    Int
+  id       Int @id @default(autoincrement())
+  tenantId Int
 
   professorId Int
   turmaId     Int
 
   professor Usuario @relation(fields: [professorId], references: [id])
-  turma      Turma   @relation(fields: [turmaId], references: [id])
-
-  createdAt DateTime @default(now())
-  deletedAt DateTime?
+  turma     Turma   @relation(fields: [turmaId], references: [id])
 
   @@unique([professorId, turmaId])
   @@map("professor_na_turma")
 }
 
 model AlunoNaTurma {
-  id        Int      @id @default(autoincrement())
-  tenantId  Int
+  id       Int @id @default(autoincrement())
+  tenantId Int
 
-  alunoId  Int
-  turmaId  Int
+  alunoId Int
+  turmaId Int
 
   aluno Usuario @relation(fields: [alunoId], references: [id])
   turma Turma   @relation(fields: [turmaId], references: [id])
 
-  createdAt DateTime @default(now())
-  deletedAt DateTime?
-
   @@unique([alunoId, turmaId])
   @@map("aluno_na_turma")
+}
+
+model Avaliacao {
+  id        Int @id @default(autoincrement())
+  tenantId  Int
+  turmaId   Int
+
+  nome      String
+  descricao String?
+  data      DateTime
+
+  turma    Turma     @relation(fields: [turmaId], references: [id])
+  questoes Questao[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("avaliacoes")
+}
+
+model Questao {
+  id              Int @id @default(autoincrement())
+  avaliacaoId     Int
+  texto           String
+  peso            Float
+  opcoes          String[]
+  respostaCorreta String
+
+  avaliacao Avaliacao @relation(fields: [avaliacaoId], references: [id])
+  respostas Resposta[]
+
+  createdAt DateTime @default(now())
+
+  @@map("questoes")
+}
+
+model Resposta {
+  id        Int @id @default(autoincrement())
+  questaoId Int
+  alunoId   Int
+  valor     String
+
+  questao Questao @relation(fields: [questaoId], references: [id])
+  aluno   Usuario @relation(fields: [alunoId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@map("respostas")
 }
