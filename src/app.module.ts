@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { UsuarioModule } from './usuario/usuario.module';
 import { RoleModule } from './role/role.module';
 import { PaginationModule } from './common/pagination/pagination.module';
+import { EscolaModule } from './escola/escola.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { PaginationModule } from './common/pagination/pagination.module';
     UsuarioModule,
     RoleModule,
     PaginationModule,
+    EscolaModule,
   ],
 })
 export class AppModule implements NestModule {

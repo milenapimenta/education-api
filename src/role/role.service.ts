@@ -1,11 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class RoleService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(createRoleDto: CreateRoleDto, tenantId: number) {
     const role = await this.prisma.role.create({
@@ -57,6 +57,10 @@ export class RoleService {
 
     if (!role) {
       throw new NotFoundException('Role não encontrada para este tenant');
+    }
+
+    if (Object.keys(dto).length === 0) {
+      throw new BadRequestException('Nenhum campo para atualizar');
     }
 
     return this.prisma.role.update({
