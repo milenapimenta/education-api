@@ -1,5 +1,6 @@
 export class Escola {
   id: number;
+  
   nome: string;
   slug: string;
   ativa: boolean;

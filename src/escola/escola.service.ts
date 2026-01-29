@@ -22,14 +22,14 @@ export class EscolaService {
     };
   }
 
-  async findAll() {
+  async findAll(page: number = 1, limit: number = 10) {
     return await this.pagination.paginate({
       model: this.prisma.escola,
       where: {
         deletedAt: null
       },
-      page: 1,
-      limit: 10,
+      page: page,
+      limit: limit,
       orderBy: {
         createdAt: 'desc'
       }
