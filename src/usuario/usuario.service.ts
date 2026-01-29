@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -7,7 +7,7 @@ import { PaginationService } from 'src/common/pagination/pagination.service';
 @Injectable()
 export class UsuarioService {
   constructor(
-    private prisma: PrismaService,
+    private readonly prisma: PrismaService,
     private pagination: PaginationService,
   ) { }
 
@@ -34,6 +34,9 @@ export class UsuarioService {
       },
       page,
       limit,
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 
@@ -67,6 +70,10 @@ export class UsuarioService {
 
     if (!usuario) {
       throw new NotFoundException('Usuário não encontrado para este tenant');
+    }
+
+    if (Object.keys(updateUsuarioDto).length === 0) {
+      throw new BadRequestException('Nenhum campo para atualizar');
     }
 
     const usuarioAtualizado = await this.prisma.usuario.update({

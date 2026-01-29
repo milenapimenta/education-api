@@ -20,11 +20,11 @@ async function main() {
   // ESCOLAS
   // =========================
   const escolaA = await prisma.escola.create({
-    data: { nome: 'Escola Alpha', slug: 'escola-alpha' },
+    data: { nome: 'Escola Alpha', slug: 'escola-alpha', cnpj: '12345678901234'},
   });
 
   const escolaB = await prisma.escola.create({
-    data: { nome: 'Escola Beta', slug: 'escola-beta' },
+    data: { nome: 'Escola Beta', slug: 'escola-beta', cnpj: '12345678901235'},
   });
 
   // =========================

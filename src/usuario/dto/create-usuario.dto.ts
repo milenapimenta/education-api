@@ -8,6 +8,7 @@ import {
 
 export class CreateUsuarioDto {
   @IsInt()
+  @IsNotEmpty()
   roleId: number;
 
   @IsString()

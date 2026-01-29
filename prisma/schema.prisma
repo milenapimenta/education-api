@@ -10,6 +10,7 @@ model Escola {
   id    Int     @id @default(autoincrement())
   nome  String
   slug  String  @unique
+  cnpj  String  @unique
   ativa Boolean @default(true)
 
   usuarios Usuario[]
