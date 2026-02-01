@@ -5,6 +5,7 @@ export class Usuario {
   roleId: number;
 
   nome: string;
+  foto_perfil?: string;
   email: string;
   senha: string;
   documento: string;

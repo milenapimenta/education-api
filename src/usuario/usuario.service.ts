@@ -11,11 +11,15 @@ export class UsuarioService {
     private pagination: PaginationService,
   ) { }
 
-  async create(createUsuarioDto: CreateUsuarioDto, tenantID: number) {
+  async create(createUsuarioDto: CreateUsuarioDto, tenantID: number, file: Express.Multer.File) {
+    const { roleId, data_nascimento, ...rest } = createUsuarioDto;
     const usuario = await this.prisma.usuario.create({
       data: {
         tenantId: tenantID,
-        ...createUsuarioDto,
+        foto_perfil: file ? file.filename : null,
+        roleId: Number(roleId),
+        data_nascimento: new Date(data_nascimento),
+        ...rest,
       },
     });
 
