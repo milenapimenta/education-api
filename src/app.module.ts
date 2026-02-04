@@ -13,6 +13,10 @@ import { AvaliacaoModule } from './avaliacao/avaliacao.module';
 import { QuestaoModule } from './questao/questao.module';
 import { RespostaModule } from './resposta/resposta.module';
 import { UploadModule } from './common/upload/upload.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { EmailModule } from './email/email.module';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -29,6 +33,29 @@ import { UploadModule } from './common/upload/upload.module';
     QuestaoModule,
     RespostaModule,
     UploadModule,
+    EmailModule,
+
+    MailerModule.forRoot({
+      transport: {
+        host: 'smtp.ethereal.email',
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.ETHEREAL_USER,
+          pass: process.env.ETHEREAL_PASS,
+        },
+      },
+      defaults: {
+        from: '"Minha API" <no-reply@teste.com>',
+      },
+      template: {
+        dir: join(process.cwd(), 'templates'),
+        adapter: new HandlebarsAdapter(),
+        options: {
+          strict: true,
+        },
+      },
+    }),
   ],
 })
 export class AppModule implements NestModule {

@@ -4,6 +4,7 @@ import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PaginationService } from 'src/common/pagination/pagination.service';
 import { UploadService } from 'src/common/upload/upload.service';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class UsuarioService {
@@ -11,11 +12,12 @@ export class UsuarioService {
     private readonly prisma: PrismaService,
     private pagination: PaginationService,
     private uploadService: UploadService,
+    private readonly emailService: EmailService,
   ) { }
 
   async create(createUsuarioDto: CreateUsuarioDto, tenantID: number, file: Express.Multer.File) {
     const { roleId, data_nascimento, ...rest } = createUsuarioDto;
-    
+
     const foto_perfil = file ? await this.uploadService.uploadFile(file) : null;
 
     const usuario = await this.prisma.usuario.create({
@@ -27,6 +29,17 @@ export class UsuarioService {
         ...rest,
       },
     });
+
+    try {
+      await this.emailService.enviarBoasVindas(
+        usuario.email,
+        usuario.nome
+      );
+    } catch (error) {
+      console.error('Erro ao enviar e-mail de boas-vindas:', error);
+    }
+
+    console.log('Email de boas-vindas enviado para:', usuario.email);
 
     return {
       message: 'Usuario criado com sucesso',
