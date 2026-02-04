@@ -12,6 +12,7 @@ import { CursoModule } from './curso/curso.module';
 import { AvaliacaoModule } from './avaliacao/avaliacao.module';
 import { QuestaoModule } from './questao/questao.module';
 import { RespostaModule } from './resposta/resposta.module';
+import { UploadModule } from './common/upload/upload.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { RespostaModule } from './resposta/resposta.module';
     AvaliacaoModule,
     QuestaoModule,
     RespostaModule,
+    UploadModule,
   ],
 })
 export class AppModule implements NestModule {

@@ -26,7 +26,7 @@ model Escola {
 }
 
 model Role {
-  id       Int @id @default(autoincrement())
+  id       Int    @id @default(autoincrement())
   tenantId Int
   escola   Escola @relation(fields: [tenantId], references: [id])
 
@@ -42,8 +42,8 @@ model Role {
 }
 
 model Permissao {
-  id        Int    @id @default(autoincrement())
-  nome      String @unique
+  id        Int     @id @default(autoincrement())
+  nome      String  @unique
   descricao String?
 
   roles RolePermissao[]
@@ -55,25 +55,26 @@ model Permissao {
 }
 
 model RolePermissao {
-  id           Int @id @default(autoincrement())
-  roleId       Int
-  permissaoId  Int
+  id          Int @id @default(autoincrement())
+  roleId      Int
+  permissaoId Int
 
-  role       Role      @relation(fields: [roleId], references: [id])
-  permissao  Permissao @relation(fields: [permissaoId], references: [id])
+  role      Role      @relation(fields: [roleId], references: [id])
+  permissao Permissao @relation(fields: [permissaoId], references: [id])
 
   @@unique([roleId, permissaoId])
   @@map("role_permissao")
 }
 
 model Usuario {
-  id       Int @id @default(autoincrement())
+  id       Int    @id @default(autoincrement())
   tenantId Int
   escola   Escola @relation(fields: [tenantId], references: [id])
 
   roleId Int
   role   Role @relation(fields: [roleId], references: [id])
 
+  foto_perfil     String?
   nome            String
   email           String
   senha           String
@@ -93,7 +94,7 @@ model Usuario {
 }
 
 model Curso {
-  id       Int @id @default(autoincrement())
+  id       Int    @id @default(autoincrement())
   tenantId Int
   escola   Escola @relation(fields: [tenantId], references: [id])
 
@@ -110,7 +111,7 @@ model Curso {
 }
 
 model Turma {
-  id       Int @id @default(autoincrement())
+  id       Int    @id @default(autoincrement())
   tenantId Int
   escola   Escola @relation(fields: [tenantId], references: [id])
 
@@ -160,9 +161,9 @@ model AlunoNaTurma {
 }
 
 model Avaliacao {
-  id        Int @id @default(autoincrement())
-  tenantId  Int
-  turmaId   Int
+  id       Int @id @default(autoincrement())
+  tenantId Int
+  turmaId  Int
 
   nome      String
   descricao String?
@@ -178,14 +179,14 @@ model Avaliacao {
 }
 
 model Questao {
-  id              Int @id @default(autoincrement())
+  id              Int      @id @default(autoincrement())
   avaliacaoId     Int
   texto           String
   peso            Float
   opcoes          String[]
   respostaCorreta String
 
-  avaliacao Avaliacao @relation(fields: [avaliacaoId], references: [id])
+  avaliacao Avaliacao  @relation(fields: [avaliacaoId], references: [id])
   respostas Resposta[]
 
   createdAt DateTime @default(now())
@@ -194,7 +195,7 @@ model Questao {
 }
 
 model Resposta {
-  id        Int @id @default(autoincrement())
+  id        Int    @id @default(autoincrement())
   questaoId Int
   alunoId   Int
   valor     String

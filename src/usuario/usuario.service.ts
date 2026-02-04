@@ -3,19 +3,28 @@ import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PaginationService } from 'src/common/pagination/pagination.service';
+import { UploadService } from 'src/common/upload/upload.service';
 
 @Injectable()
 export class UsuarioService {
   constructor(
     private readonly prisma: PrismaService,
     private pagination: PaginationService,
+    private uploadService: UploadService,
   ) { }
 
-  async create(createUsuarioDto: CreateUsuarioDto, tenantID: number) {
+  async create(createUsuarioDto: CreateUsuarioDto, tenantID: number, file: Express.Multer.File) {
+    const { roleId, data_nascimento, ...rest } = createUsuarioDto;
+    
+    const foto_perfil = file ? await this.uploadService.uploadFile(file) : null;
+
     const usuario = await this.prisma.usuario.create({
       data: {
         tenantId: tenantID,
-        ...createUsuarioDto,
+        foto_perfil: foto_perfil,
+        roleId: Number(roleId),
+        data_nascimento: new Date(data_nascimento),
+        ...rest,
       },
     });
 
