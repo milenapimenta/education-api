@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Query, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Query, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, UseGuards } from '@nestjs/common';
 import { UsuarioService } from './usuario.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
@@ -7,11 +7,19 @@ import { PaginationQueryDto } from 'src/common/pagination/dtos/pagination-query.
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from 'multer.config';
 import { ImageMimeTypeValidator } from 'src/validators/image-mimetype.validator';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiParam } from '@nestjs/swagger';
 
 @Controller('usuario')
 export class UsuarioController {
   constructor(private readonly usuarioService: UsuarioService) { }
 
+  @ApiHeader({
+    name: 'x-tenant-slug',
+    description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
+    required: true,
+    example: 'escola-alpha',
+  })
+  @ApiBearerAuth('access-token')
   @Post()
   @UseInterceptors(FileInterceptor('foto_perfil', multerConfig))
   create(
@@ -30,6 +38,13 @@ export class UsuarioController {
     return this.usuarioService.create(createUsuarioDto, req.tenantId, file);
   }
 
+  @ApiHeader({
+    name: 'x-tenant-slug',
+    description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
+    required: true,
+    example: 'escola-alpha',
+  })
+  @ApiBearerAuth('access-token')
   @Get()
   findAll(
     @Req() req: TenantRequest,
@@ -42,6 +57,13 @@ export class UsuarioController {
     );
   }
 
+  @ApiHeader({
+    name: 'x-tenant-slug',
+    description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
+    required: true,
+    example: 'escola-alpha',
+  })
+  @ApiBearerAuth('access-token')
   @Get(':id')
   findOne(
     @Param('id') id: string,
@@ -50,7 +72,32 @@ export class UsuarioController {
     return this.usuarioService.findOne(+id, req.tenantId);
   }
 
+  @ApiHeader({
+    name: 'x-tenant-slug',
+    description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
+    required: true,
+    example: 'escola-alpha',
+  })
+  @ApiBearerAuth('access-token')
   @Patch(':id')
+  @UseInterceptors(FileInterceptor('foto_perfil', multerConfig))
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Atualizar usuário' })
+  @ApiParam({ name: 'id', example: 1 })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        roleId: { type: 'number' },
+        nome: { type: 'string' },
+        email: { type: 'string' },
+        senha: { type: 'string' },
+        documento: { type: 'string' },
+        data_nascimento: { type: 'string', format: 'date' },
+        foto_perfil: { type: 'string', format: 'binary' },
+      },
+    },
+  })
   update(
     @Param('id') id: string,
     @Body() updateUsuarioDto: UpdateUsuarioDto,
@@ -60,6 +107,13 @@ export class UsuarioController {
     return this.usuarioService.update(+id, updateUsuarioDto, req.tenantId, file);
   }
 
+  @ApiHeader({
+    name: 'x-tenant-slug',
+    description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
+    required: true,
+    example: 'escola-alpha',
+  })
+  @ApiBearerAuth('access-token')
   @Delete(':id')
   remove(
     @Param('id') id: string,

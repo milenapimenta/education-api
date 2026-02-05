@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { PaginationService } from 'src/common/pagination/pagination.service';
 import { UploadService } from 'src/common/upload/upload.service';
 import { EmailService } from 'src/email/email.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsuarioService {
@@ -16,7 +17,9 @@ export class UsuarioService {
   ) { }
 
   async create(createUsuarioDto: CreateUsuarioDto, tenantID: number, file: Express.Multer.File) {
-    const { roleId, data_nascimento, ...rest } = createUsuarioDto;
+    const { roleId, data_nascimento, senha, ...rest } = createUsuarioDto;
+
+    const senhaHash = await bcrypt.hash(senha, 10);
 
     const foto_perfil = file ? await this.uploadService.uploadFile(file) : null;
 
@@ -26,6 +29,7 @@ export class UsuarioService {
         foto_perfil: foto_perfil,
         roleId: Number(roleId),
         data_nascimento: new Date(data_nascimento),
+        senha: senhaHash,
         ...rest,
       },
     });
