@@ -54,9 +54,10 @@ export class UsuarioController {
   update(
     @Param('id') id: string,
     @Body() updateUsuarioDto: UpdateUsuarioDto,
+    @UploadedFile() file: Express.Multer.File,
     @Req() req: TenantRequest
   ) {
-    return this.usuarioService.update(+id, updateUsuarioDto, req.tenantId);
+    return this.usuarioService.update(+id, updateUsuarioDto, req.tenantId, file);
   }
 
   @Delete(':id')

@@ -81,7 +81,7 @@ export class UsuarioService {
     };
   }
 
-  async update(id: number, updateUsuarioDto: UpdateUsuarioDto, tenantID: number) {
+  async update(id: number, updateUsuarioDto: UpdateUsuarioDto, tenantID: number, file?: Express.Multer.File) {
     const usuario = await this.prisma.usuario.findFirst({
       where: {
         id,
@@ -98,9 +98,26 @@ export class UsuarioService {
       throw new BadRequestException('Nenhum campo para atualizar');
     }
 
+    const foto_perfil = file
+      ? await this.uploadService.uploadFile(file)
+      : usuario.foto_perfil;
+
+    const { roleId, data_nascimento, ...rest } = updateUsuarioDto;
+
+    const dataToUpdate: any = {
+      ...rest,
+      foto_perfil,
+    };
+    if (roleId) {
+      dataToUpdate.roleId = Number(roleId);
+    }
+    if (data_nascimento) {
+      dataToUpdate.data_nascimento = new Date(data_nascimento);
+    }
+
     const usuarioAtualizado = await this.prisma.usuario.update({
       where: { id: usuario.id },
-      data: updateUsuarioDto,
+      data: dataToUpdate,
     });
 
     return {
