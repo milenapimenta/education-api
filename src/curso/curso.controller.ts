@@ -1,11 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader } from '@nestjs/swagger';
 import { CursoService } from './curso.service';
 import { CreateCursoDto } from './dto/create-curso.dto';
 import { UpdateCursoDto } from './dto/update-curso.dto';
 import type { TenantRequest } from 'src/common/interfaces/tenant-request.interface';
 import { PaginationQueryDto } from 'src/common/pagination/dtos/pagination-query.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { TenantAuthGuard } from 'src/auth/guards/tenant-auth.guard';
 
+@UseGuards(JwtAuthGuard, TenantAuthGuard)
+@ApiBearerAuth()
 @Controller('curso')
 export class CursoController {
   constructor(private readonly cursoService: CursoService) {}
@@ -16,7 +20,6 @@ export class CursoController {
     required: true,
     example: 'escola-alpha',
   })
-  @ApiBearerAuth('access-token')
   @Post()
   create(
     @Body() createCursoDto: CreateCursoDto, 
@@ -31,7 +34,6 @@ export class CursoController {
     required: true,
     example: 'escola-alpha',
   })
-  @ApiBearerAuth('access-token')
   @Get()
   findAll(
     @Req() req: TenantRequest,
@@ -46,7 +48,6 @@ export class CursoController {
     required: true,
     example: 'escola-alpha',
   })
-  @ApiBearerAuth('access-token')
   @Get(':id')
   findOne(
     @Param('id') id: string,
@@ -61,7 +62,6 @@ export class CursoController {
     required: true,
     example: 'escola-alpha',
   })
-  @ApiBearerAuth('access-token')
   @Patch(':id')
   update(
     @Param('id') id: string, 
@@ -77,7 +77,6 @@ export class CursoController {
     required: true,
     example: 'escola-alpha',
   })
-  @ApiBearerAuth('access-token')
   @Delete(':id')
   remove(
     @Param('id') id: string,

@@ -1,13 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader } from '@nestjs/swagger';
 import { AvaliacaoService } from './avaliacao.service';
 import { CreateAvaliacaoDto } from './dto/create-avaliacao.dto';
 import { UpdateAvaliacaoDto } from './dto/update-avaliacao.dto';
 import type { TenantRequest } from 'src/common/interfaces/tenant-request.interface';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { TenantAuthGuard } from 'src/auth/guards/tenant-auth.guard';
+import { PaginationQueryDto } from 'src/common/pagination/dtos/pagination-query.dto';
 
+@UseGuards(JwtAuthGuard, TenantAuthGuard)
+@ApiBearerAuth()
 @Controller('avaliacao')
 export class AvaliacaoController {
-  constructor(private readonly avaliacaoService: AvaliacaoService) {}
+  constructor(private readonly avaliacaoService: AvaliacaoService) { }
 
   @ApiHeader({
     name: 'x-tenant-slug',
@@ -15,7 +20,6 @@ export class AvaliacaoController {
     required: true,
     example: 'escola-alpha',
   })
-  @ApiBearerAuth('access-token')
   @Post()
   create(
     @Body() createAvaliacaoDto: CreateAvaliacaoDto,
@@ -24,20 +28,16 @@ export class AvaliacaoController {
     return this.avaliacaoService.create(createAvaliacaoDto, req.tenantId);
   }
 
-  @ApiHeader({
-    name: 'x-tenant-slug',
-    description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
-    example: 'escola-alpha',
-  })
-  @ApiBearerAuth('access-token')
   @Get()
   findAll(
     @Req() req: TenantRequest,
-    @Query('page') page: number,
-    @Query('limit') limit: number,
+    @Query() query: PaginationQueryDto
   ) {
-    return this.avaliacaoService.findAll(req.tenantId, page, limit);
+    return this.avaliacaoService.findAll(
+      req.tenantId,
+      query.page,
+      query.limit
+    );
   }
 
   @ApiHeader({
@@ -46,7 +46,6 @@ export class AvaliacaoController {
     required: true,
     example: 'escola-alpha',
   })
-  @ApiBearerAuth('access-token')
   @Get(':id')
   findOne(
     @Param('id') id: string,
@@ -61,10 +60,9 @@ export class AvaliacaoController {
     required: true,
     example: 'escola-alpha',
   })
-  @ApiBearerAuth('access-token')
   @Patch(':id')
   update(
-    @Param('id') id: string, 
+    @Param('id') id: string,
     @Body() updateAvaliacaoDto: UpdateAvaliacaoDto,
     @Req() req: TenantRequest
   ) {
@@ -77,7 +75,6 @@ export class AvaliacaoController {
     required: true,
     example: 'escola-alpha',
   })
-  @ApiBearerAuth('access-token')
   @Delete(':id')
   remove(
     @Param('id') id: string,

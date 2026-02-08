@@ -69,7 +69,17 @@ export class AppModule implements NestModule {
       .apply(TenantMiddleware)
       .exclude(
         { path: 'public/(.*)', method: RequestMethod.ALL },
+        { path: 'escola', method: RequestMethod.ALL },
+        { path: 'auth/login', method: RequestMethod.POST }
       )
-      .forRoutes('*');
+      .forRoutes(
+        'usuario',
+        'turma',
+        'escola',
+        'curso',
+        'role',
+        'email',
+        'avaliacao',
+      );
   }
 }

@@ -25,7 +25,7 @@ export class AvaliacaoService {
     }
   }
 
-  async findAll(tenantId: number, page: number, limit: number) {
+  async findAll(tenantId: number, page: number = 1, limit: number = 10) {
     return await this.pagination.paginate({
       model: this.prisma.avaliacao,
       where: {

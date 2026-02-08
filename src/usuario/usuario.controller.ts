@@ -7,8 +7,12 @@ import { PaginationQueryDto } from 'src/common/pagination/dtos/pagination-query.
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from 'multer.config';
 import { ImageMimeTypeValidator } from 'src/validators/image-mimetype.validator';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiParam } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiParam, ApiSecurity } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { TenantAuthGuard } from 'src/auth/guards/tenant-auth.guard';
 
+@UseGuards(JwtAuthGuard, TenantAuthGuard)
+@ApiBearerAuth()
 @Controller('usuario')
 export class UsuarioController {
   constructor(private readonly usuarioService: UsuarioService) { }
@@ -19,7 +23,6 @@ export class UsuarioController {
     required: true,
     example: 'escola-alpha',
   })
-  @ApiBearerAuth('access-token')
   @Post()
   @UseInterceptors(FileInterceptor('foto_perfil', multerConfig))
   create(
@@ -44,7 +47,6 @@ export class UsuarioController {
     required: true,
     example: 'escola-alpha',
   })
-  @ApiBearerAuth('access-token')
   @Get()
   findAll(
     @Req() req: TenantRequest,
@@ -63,7 +65,6 @@ export class UsuarioController {
     required: true,
     example: 'escola-alpha',
   })
-  @ApiBearerAuth('access-token')
   @Get(':id')
   findOne(
     @Param('id') id: string,
@@ -78,7 +79,6 @@ export class UsuarioController {
     required: true,
     example: 'escola-alpha',
   })
-  @ApiBearerAuth('access-token')
   @Patch(':id')
   @UseInterceptors(FileInterceptor('foto_perfil', multerConfig))
   @ApiConsumes('multipart/form-data')
@@ -113,7 +113,6 @@ export class UsuarioController {
     required: true,
     example: 'escola-alpha',
   })
-  @ApiBearerAuth('access-token')
   @Delete(':id')
   remove(
     @Param('id') id: string,

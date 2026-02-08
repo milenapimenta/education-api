@@ -19,7 +19,7 @@ export class AuthService {
         })
 
         if (!usuario) {
-            throw new Error('Usuário não encontrado')
+            throw new Error('Credenciais inválidas')
         }
 
         const senhaValida = await bcrypt.compare(senha, usuario.senha)

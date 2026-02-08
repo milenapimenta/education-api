@@ -1,10 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards } from '@nestjs/common';
 import { RoleService } from './role.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import type { TenantRequest } from 'src/common/interfaces/tenant-request.interface';
 import { ApiBearerAuth, ApiHeader } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { TenantAuthGuard } from 'src/auth/guards/tenant-auth.guard';
 
+@UseGuards(JwtAuthGuard, TenantAuthGuard)
+@ApiBearerAuth()
 @Controller('role')
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
@@ -15,7 +19,6 @@ export class RoleController {
     required: true,
     example: 'escola-alpha',
   })
-  @ApiBearerAuth('access-token')
   @Post()
   create(
     @Body() createRoleDto: CreateRoleDto,
@@ -30,7 +33,6 @@ export class RoleController {
     required: true,
     example: 'escola-alpha',
   })
-  @ApiBearerAuth('access-token')
   @Get()
   findAll(@Req() req: TenantRequest) {
     return this.roleService.findAll(req.tenantId);
@@ -42,7 +44,6 @@ export class RoleController {
     required: true,
     example: 'escola-alpha',
   })
-  @ApiBearerAuth('access-token')
   @Get(':id')
   findOne(
     @Param('id') id: string,
@@ -57,7 +58,6 @@ export class RoleController {
     required: true,
     example: 'escola-alpha',
   })
-  @ApiBearerAuth('access-token')
   @Patch(':id')
   update(
     @Param('id') id: string, 
@@ -73,7 +73,6 @@ export class RoleController {
     required: true,
     example: 'escola-alpha',
   })
-  @ApiBearerAuth('access-token')
   @Delete(':id')
   remove(
     @Param('id') id: string,
