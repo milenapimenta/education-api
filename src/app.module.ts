@@ -75,7 +75,6 @@ export class AppModule implements NestModule {
       .forRoutes(
         'usuario',
         'turma',
-        'escola',
         'curso',
         'role',
         'email',
