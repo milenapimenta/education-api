@@ -42,6 +42,7 @@ export class AuthService {
             sub: usuario.id,
             tenantId: usuario.tenantId,
             role: usuario.role.id,
+            roleNome: usuario.role.nome,
             roleScope: usuario.role.scope,
         };
 

@@ -5,7 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class TenantAuthGuard implements CanActivate {
-  constructor(private readonly prisma: PrismaService, private readonly reflector: Reflector) {}
+  constructor(private readonly prisma: PrismaService, private readonly reflector: Reflector) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>('isPublic', [
@@ -21,7 +21,8 @@ export class TenantAuthGuard implements CanActivate {
     }
 
     const isAdminGlobal =
-      req.usuario.roleScope === 'GLOBAL' && Number(req.usuario.role) === 1;
+      req.usuario.roleScope === 'GLOBAL' &&
+      req.usuario.roleNome === 'ADMIN';
 
     if (!isAdminGlobal) {
       const rawTenantSlug = req.headers['x-tenant-slug'];
@@ -29,7 +30,7 @@ export class TenantAuthGuard implements CanActivate {
 
       if (!tenantSlug) {
         throw new UnauthorizedException(
-          'Header x-tenant-slug é obrigatório para usuários TENANT',
+          'x-tenant-slug é obrigatório.',
         );
       }
 

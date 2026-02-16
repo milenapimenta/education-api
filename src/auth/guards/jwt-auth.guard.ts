@@ -30,6 +30,7 @@ export class JwtAuthGuard implements CanActivate {
         id: payload.sub,
         tenantId: payload.tenantId ?? null,
         role: payload.role,
+        roleNome: payload.roleNome,
         roleScope: payload.roleScope,
       };
     } catch {
