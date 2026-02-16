@@ -4,11 +4,8 @@ import { CreateTurmaDto } from './dto/create-turma.dto';
 import { UpdateTurmaDto } from './dto/update-turma.dto';
 import type { TenantRequest } from 'src/common/interfaces/tenant-request.interface';
 import { ApiBearerAuth, ApiHeader } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { TenantAuthGuard } from 'src/auth/guards/tenant-auth.guard';
 import { PaginationQueryDto } from 'src/common/pagination/dtos/pagination-query.dto';
 
-@UseGuards(JwtAuthGuard, TenantAuthGuard)
 @ApiBearerAuth()
 @Controller('turma')
 export class TurmaController {
@@ -17,7 +14,7 @@ export class TurmaController {
   @ApiHeader({
     name: 'x-tenant-slug',
     description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
+    required: false,
     example: 'escola-alpha',
   })
   @Post()
@@ -31,7 +28,7 @@ export class TurmaController {
   @ApiHeader({
     name: 'x-tenant-slug',
     description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
+    required: false,
     example: 'escola-alpha',
   })
   @Get()
@@ -49,7 +46,7 @@ export class TurmaController {
   @ApiHeader({
     name: 'x-tenant-slug',
     description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
+    required: false,
     example: 'escola-alpha',
   })
   @Get(':id')
@@ -63,7 +60,7 @@ export class TurmaController {
   @ApiHeader({
     name: 'x-tenant-slug',
     description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
+    required: false,
     example: 'escola-alpha',
   })
   @Patch(':id')
@@ -78,7 +75,7 @@ export class TurmaController {
   @ApiHeader({
     name: 'x-tenant-slug',
     description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
+    required: false,
     example: 'escola-alpha',
   })
   @Delete(':id')

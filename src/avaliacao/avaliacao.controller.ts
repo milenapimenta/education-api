@@ -4,11 +4,8 @@ import { AvaliacaoService } from './avaliacao.service';
 import { CreateAvaliacaoDto } from './dto/create-avaliacao.dto';
 import { UpdateAvaliacaoDto } from './dto/update-avaliacao.dto';
 import type { TenantRequest } from 'src/common/interfaces/tenant-request.interface';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { TenantAuthGuard } from 'src/auth/guards/tenant-auth.guard';
 import { PaginationQueryDto } from 'src/common/pagination/dtos/pagination-query.dto';
 
-@UseGuards(JwtAuthGuard, TenantAuthGuard)
 @ApiBearerAuth()
 @Controller('avaliacao')
 export class AvaliacaoController {
@@ -17,7 +14,7 @@ export class AvaliacaoController {
   @ApiHeader({
     name: 'x-tenant-slug',
     description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
+    required: false,
     example: 'escola-alpha',
   })
   @Post()
@@ -43,7 +40,7 @@ export class AvaliacaoController {
   @ApiHeader({
     name: 'x-tenant-slug',
     description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
+    required: false,
     example: 'escola-alpha',
   })
   @Get(':id')
@@ -57,7 +54,7 @@ export class AvaliacaoController {
   @ApiHeader({
     name: 'x-tenant-slug',
     description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
+    required: false,
     example: 'escola-alpha',
   })
   @Patch(':id')
@@ -72,7 +69,7 @@ export class AvaliacaoController {
   @ApiHeader({
     name: 'x-tenant-slug',
     description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
+    required: false,
     example: 'escola-alpha',
   })
   @Delete(':id')

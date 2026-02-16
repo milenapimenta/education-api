@@ -7,11 +7,8 @@ import { PaginationQueryDto } from 'src/common/pagination/dtos/pagination-query.
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from 'multer.config';
 import { ImageMimeTypeValidator } from 'src/validators/image-mimetype.validator';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiParam, ApiSecurity } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { TenantAuthGuard } from 'src/auth/guards/tenant-auth.guard';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiParam } from '@nestjs/swagger';
 
-@UseGuards(JwtAuthGuard, TenantAuthGuard)
 @ApiBearerAuth()
 @Controller('usuario')
 export class UsuarioController {
@@ -20,7 +17,7 @@ export class UsuarioController {
   @ApiHeader({
     name: 'x-tenant-slug',
     description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
+    required: false,
     example: 'escola-alpha',
   })
   @Post()
@@ -44,7 +41,7 @@ export class UsuarioController {
   @ApiHeader({
     name: 'x-tenant-slug',
     description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
+    required: false,
     example: 'escola-alpha',
   })
   @Get()
@@ -62,7 +59,7 @@ export class UsuarioController {
   @ApiHeader({
     name: 'x-tenant-slug',
     description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
+    required: false,
     example: 'escola-alpha',
   })
   @Get(':id')
@@ -76,7 +73,7 @@ export class UsuarioController {
   @ApiHeader({
     name: 'x-tenant-slug',
     description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
+    required: false,
     example: 'escola-alpha',
   })
   @Patch(':id')
@@ -110,7 +107,7 @@ export class UsuarioController {
   @ApiHeader({
     name: 'x-tenant-slug',
     description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
+    required: false,
     example: 'escola-alpha',
   })
   @Delete(':id')

@@ -10,25 +10,30 @@ export class AuthService {
         private readonly prisma: PrismaService
     ) { }
 
-    async login(tenantId: number | null, email: string, senha: string) {
+    async login(email: string, senha: string, tenantSlug?: string) {
+        let tenantId: number | null = null;
+
+        if (tenantSlug) {
+            const tenant = await this.prisma.escola.findUnique({
+                where: { slug: tenantSlug },
+            });
+            if (!tenant) throw new UnauthorizedException('Tenant não encontrado');
+            tenantId = tenant.id;
+        }
+
         const usuario = await this.prisma.usuario.findFirst({
             where: {
-                email: email,
-                tenantId: tenantId ?? null,
+                email,
+                tenantId: tenantId ?? null, // <- aqui garante null para admin/global
             },
-            include: {
-                role: true,
-            },
+            include: { role: true },
         });
-
-        console.log('TenantId recebido no login:', tenantId);
 
         if (!usuario) {
             throw new UnauthorizedException('Credenciais inválidas');
         }
 
         const senhaValida = await bcrypt.compare(senha, usuario.senha);
-
         if (!senhaValida) {
             throw new UnauthorizedException('Credenciais inválidas');
         }
@@ -40,8 +45,6 @@ export class AuthService {
             roleScope: usuario.role.scope,
         };
 
-        return {
-            token: this.jwtService.sign(payload),
-        };
+        return { token: this.jwtService.sign(payload) };
     }
 }

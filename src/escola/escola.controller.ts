@@ -4,11 +4,10 @@ import { CreateEscolaDto } from './dto/create-escola.dto';
 import { UpdateEscolaDto } from './dto/update-escola.dto';
 import { PaginationQueryDto } from 'src/common/pagination/dtos/pagination-query.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Roles } from 'src/common/decorators/role.decorator';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @ApiBearerAuth()
 @Controller('escola')
 export class EscolaController {
@@ -20,13 +19,11 @@ export class EscolaController {
     return this.escolaService.create(createEscolaDto);
   }
 
-  @Roles('ADMIN')
   @Get()
   findAll(@Query() query : PaginationQueryDto) {
     return this.escolaService.findAll(query.page, query.limit);
   }
 
-  @Roles('ADMIN')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.escolaService.findOne(+id);

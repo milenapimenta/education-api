@@ -1,8 +1,13 @@
-import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
-import { TenantMiddleware } from './common/middleware/tentant.middleware';
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { APP_GUARD, Reflector } from '@nestjs/core';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
-import { ConfigModule } from '@nestjs/config';
 import { UsuarioModule } from './usuario/usuario.module';
 import { RoleModule } from './role/role.module';
 import { PaginationModule } from './common/pagination/pagination.module';
@@ -13,19 +18,20 @@ import { AvaliacaoModule } from './avaliacao/avaliacao.module';
 import { QuestaoModule } from './questao/questao.module';
 import { RespostaModule } from './resposta/resposta.module';
 import { UploadModule } from './common/upload/upload.module';
-import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { EmailModule } from './email/email.module';
-import { join } from 'path';
-import { ServeStaticModule } from '@nestjs/serve-static';
+
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { TenantAuthGuard } from './auth/guards/tenant-auth.guard';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'public'),
       serveRoot: '/public',
     }),
+
     PrismaModule,
     AuthModule,
     UsuarioModule,
@@ -62,15 +68,11 @@ import { ServeStaticModule } from '@nestjs/serve-static';
       },
     }),
   ],
+
+  providers: [
+    Reflector,
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: TenantAuthGuard },
+  ],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(TenantMiddleware)
-      .exclude(
-        { path: 'public/(.*)', method: RequestMethod.ALL },
-        { path: 'escola', method: RequestMethod.ALL }
-      )
-      .forRoutes('*');
-  }
-}
+export class AppModule {}

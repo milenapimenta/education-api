@@ -3,9 +3,7 @@ import { QuestaoService } from './questao.service';
 import { CreateQuestaoDto } from './dto/create-questao.dto';
 import { UpdateQuestaoDto } from './dto/update-questao.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
-@UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 @Controller('questao')
 export class QuestaoController {

@@ -5,10 +5,7 @@ import { CreateCursoDto } from './dto/create-curso.dto';
 import { UpdateCursoDto } from './dto/update-curso.dto';
 import type { TenantRequest } from 'src/common/interfaces/tenant-request.interface';
 import { PaginationQueryDto } from 'src/common/pagination/dtos/pagination-query.dto';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { TenantAuthGuard } from 'src/auth/guards/tenant-auth.guard';
 
-@UseGuards(JwtAuthGuard, TenantAuthGuard)
 @ApiBearerAuth()
 @Controller('curso')
 export class CursoController {
@@ -17,7 +14,7 @@ export class CursoController {
   @ApiHeader({
     name: 'x-tenant-slug',
     description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
+    required: false,
     example: 'escola-alpha',
   })
   @Post()
@@ -31,7 +28,7 @@ export class CursoController {
   @ApiHeader({
     name: 'x-tenant-slug',
     description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
+    required: false,
     example: 'escola-alpha',
   })
   @Get()
@@ -45,7 +42,7 @@ export class CursoController {
   @ApiHeader({
     name: 'x-tenant-slug',
     description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
+    required: false,
     example: 'escola-alpha',
   })
   @Get(':id')
@@ -59,7 +56,7 @@ export class CursoController {
   @ApiHeader({
     name: 'x-tenant-slug',
     description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
+    required: false,
     example: 'escola-alpha',
   })
   @Patch(':id')
@@ -74,7 +71,7 @@ export class CursoController {
   @ApiHeader({
     name: 'x-tenant-slug',
     description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
+    required: false,
     example: 'escola-alpha',
   })
   @Delete(':id')

@@ -51,18 +51,16 @@ export class UsuarioService {
     };
   }
 
-  async findAll(tenantID: number, page: number = 1, limit: number = 10) {
+  async findAll(tenantId: number | null, page: number = 1, limit: number = 10) {
     return this.pagination.paginate({
       model: this.prisma.usuario,
       where: {
-        tenantId: tenantID,
+        tenantId: tenantId,
         deletedAt: null,
       },
       page,
       limit,
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 

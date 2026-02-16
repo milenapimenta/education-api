@@ -3,9 +3,7 @@ import { RespostaService } from './resposta.service';
 import { CreateRespostaDto } from './dto/create-resposta.dto';
 import { UpdateRespostaDto } from './dto/update-resposta.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
-@UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 @Controller('resposta')
 export class RespostaController {
