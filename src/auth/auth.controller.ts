@@ -11,7 +11,7 @@ export class AuthController {
   @ApiHeader({
     name: 'x-tenant-slug',
     description: 'ID do tenant (escola/empresa) que está fazendo a requisição',
-    required: true,
+    required: false,
     example: 1,
   })
   @Post('login')

@@ -6,6 +6,11 @@ datasource db {
   provider = "postgresql"
 }
 
+enum RoleScope {
+  GLOBAL
+  TENANT
+}
+
 model Escola {
   id    Int     @id @default(autoincrement())
   nome  String
@@ -26,18 +31,20 @@ model Escola {
 }
 
 model Role {
-  id       Int    @id @default(autoincrement())
-  tenantId Int
-  escola   Escola @relation(fields: [tenantId], references: [id])
+  id    Int       @id @default(autoincrement())
+  nome  String
+  scope RoleScope
 
-  nome       String
+  tenantId Int?
+  escola   Escola? @relation(fields: [tenantId], references: [id])
+
   usuarios   Usuario[]
   permissoes RolePermissao[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([tenantId, nome])
+  @@unique([nome, tenantId])
   @@map("roles")
 }
 
@@ -67,9 +74,9 @@ model RolePermissao {
 }
 
 model Usuario {
-  id       Int    @id @default(autoincrement())
-  tenantId Int
-  escola   Escola @relation(fields: [tenantId], references: [id])
+  id       Int     @id @default(autoincrement())
+  tenantId Int?    
+  escola   Escola? @relation(fields: [tenantId], references: [id])
 
   roleId Int
   role   Role @relation(fields: [roleId], references: [id])
