@@ -1,24 +1,22 @@
-import { Injectable, NestMiddleware, UnauthorizedException } from "@nestjs/common";
-import { PrismaService } from "src/prisma/prisma.service";
-import { TenantRequest } from "../interfaces/tenant-request.interface";
+import { Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { TenantRequest } from '../interfaces/tenant-request.interface';
 
 @Injectable()
 export class TenantMiddleware implements NestMiddleware {
-    constructor(
-        private readonly prisma: PrismaService
-    ) {}
+    constructor(private readonly prisma: PrismaService) { }
 
     async use(req: TenantRequest, res: any, next: () => void) {
+        console.log('Executando TenantMiddleware para resolver tenant...');
+
         const tenantSlug = req.headers['x-tenant-slug'] as string;
 
         if (!tenantSlug) {
-            throw new UnauthorizedException('Tenant não informado');
+            return next();
         }
 
         const escola = await this.prisma.escola.findUnique({
-            where: {
-                slug: tenantSlug
-            }
+            where: { slug: tenantSlug },
         });
 
         if (!escola || !escola.ativa) {

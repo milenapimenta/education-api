@@ -22,13 +22,11 @@ async function main() {
     { nome: 'USUARIO_REMOVER', descricao: 'Remover usuário' },
   ]
 
-  const permissoes : Permissao[] = []
+  const permissoes: Permissao[] = []
 
   for (const perm of permissoesBase) {
-    const permissao = await prisma.permissao.upsert({
-      where: { nome: perm.nome },
-      update: {},
-      create: perm,
+    const permissao = await prisma.permissao.create({
+      data: perm,
     })
 
     permissoes.push(permissao)
@@ -44,6 +42,38 @@ async function main() {
           permissaoId: p.id,
         })),
       },
+    },
+  })
+
+  const professorRole = await prisma.role.create({
+    data: {
+      nome: 'PROFESSOR',
+      scope: RoleScope.GLOBAL,
+      tenantId: null,
+    },
+  })
+
+  const alunoRole = await prisma.role.create({
+    data: {
+      nome: 'ALUNO',
+      scope: RoleScope.GLOBAL,
+      tenantId: null,
+    },
+  })
+
+  const diretorRole = await prisma.role.create({
+    data: {
+      nome: 'DIRETOR',
+      scope: RoleScope.GLOBAL,
+      tenantId: null,
+    },
+  })
+
+  const coordenadorRole = await prisma.role.create({
+    data: {
+      nome: 'COORDENADOR',
+      scope: RoleScope.GLOBAL,
+      tenantId: null,
     },
   })
 
@@ -72,22 +102,6 @@ async function main() {
       },
     })
 
-    const professorRole = await prisma.role.create({
-      data: {
-        nome: 'PROFESSOR',
-        scope: RoleScope.TENANT,
-        tenantId: escola.id,
-      },
-    })
-
-    const alunoRole = await prisma.role.create({
-      data: {
-        nome: 'ALUNO',
-        scope: RoleScope.TENANT,
-        tenantId: escola.id,
-      },
-    })
-
     const curso = await prisma.curso.create({
       data: {
         nome: faker.company.buzzPhrase(),
@@ -105,10 +119,34 @@ async function main() {
       },
     })
 
+    await prisma.usuario.create({
+      data: {
+        nome: faker.person.fullName(),
+        email: faker.internet.email().toLowerCase(),
+        senha: senhaHash,
+        documento: faker.string.numeric(11),
+        data_nascimento: faker.date.birthdate(),
+        tenantId: escola.id,
+        roleId: diretorRole.id,
+      },
+    })
+
+    await prisma.usuario.create({
+      data: {
+        nome: faker.person.fullName(),
+        email: faker.internet.email().toLowerCase(),
+        senha: senhaHash,
+        documento: faker.string.numeric(11),
+        data_nascimento: faker.date.birthdate(),
+        tenantId: escola.id,
+        roleId: coordenadorRole.id,
+      },
+    })
+
     const professor = await prisma.usuario.create({
       data: {
         nome: faker.person.fullName(),
-        email: faker.internet.email(),
+        email: faker.internet.email().toLowerCase(),
         senha: senhaHash,
         documento: faker.string.numeric(11),
         data_nascimento: faker.date.birthdate(),
@@ -129,7 +167,7 @@ async function main() {
       const aluno = await prisma.usuario.create({
         data: {
           nome: faker.person.fullName(),
-          email: faker.internet.email(),
+          email: faker.internet.email().toLowerCase(),
           senha: senhaHash,
           documento: faker.string.numeric(11),
           data_nascimento: faker.date.birthdate(),

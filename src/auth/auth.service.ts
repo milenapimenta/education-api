@@ -2,7 +2,6 @@ import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "src/prisma/prisma.service";
 import * as bcrypt from 'bcrypt';
-import { RoleScope } from "@prisma/client";
 
 @Injectable()
 export class AuthService {
@@ -14,16 +13,15 @@ export class AuthService {
     async login(tenantId: number | null, email: string, senha: string) {
         const usuario = await this.prisma.usuario.findFirst({
             where: {
-                email,
-                OR: [
-                    { tenantId },
-                    { tenantId: null }
-                ]
+                email: email,
+                tenantId: tenantId ?? null,
             },
             include: {
                 role: true,
             },
         });
+
+        console.log('TenantId recebido no login:', tenantId);
 
         if (!usuario) {
             throw new UnauthorizedException('Credenciais inválidas');
@@ -38,8 +36,8 @@ export class AuthService {
         const payload = {
             sub: usuario.id,
             tenantId: usuario.tenantId,
-            role: usuario.role.nome,
-            roleScope: usuario.role.scope as RoleScope,
+            role: usuario.role.id,
+            roleScope: usuario.role.scope,
         };
 
         return {

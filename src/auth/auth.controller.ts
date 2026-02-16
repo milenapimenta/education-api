@@ -20,7 +20,7 @@ export class AuthController {
     @Body() body: LoginDto,
   ) {
     return this.authService.login(
-      req.tenantId,
+      req.tenantId ?? null,
       body.email,
       body.senha,
     );

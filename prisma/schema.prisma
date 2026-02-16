@@ -45,6 +45,7 @@ model Role {
   updatedAt DateTime @updatedAt
 
   @@unique([nome, tenantId])
+  @@index([tenantId])
   @@map("roles")
 }
 
@@ -74,8 +75,9 @@ model RolePermissao {
 }
 
 model Usuario {
-  id       Int     @id @default(autoincrement())
-  tenantId Int?    
+  id       Int @id @default(autoincrement())
+
+  tenantId Int?
   escola   Escola? @relation(fields: [tenantId], references: [id])
 
   roleId Int
@@ -97,11 +99,12 @@ model Usuario {
   deletedAt DateTime?
 
   @@unique([email, tenantId, documento])
+  @@index([tenantId])
   @@map("usuarios")
 }
 
 model Curso {
-  id       Int    @id @default(autoincrement())
+  id       Int @id @default(autoincrement())
   tenantId Int
   escola   Escola @relation(fields: [tenantId], references: [id])
 
@@ -114,11 +117,12 @@ model Curso {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
+  @@index([tenantId])
   @@map("cursos")
 }
 
 model Turma {
-  id       Int    @id @default(autoincrement())
+  id       Int @id @default(autoincrement())
   tenantId Int
   escola   Escola @relation(fields: [tenantId], references: [id])
 
@@ -136,6 +140,7 @@ model Turma {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
+  @@index([tenantId])
   @@map("turmas")
 }
 
@@ -150,6 +155,7 @@ model ProfessorNaTurma {
   turma     Turma   @relation(fields: [turmaId], references: [id])
 
   @@unique([professorId, turmaId])
+  @@index([tenantId])
   @@map("professor_na_turma")
 }
 
@@ -164,6 +170,7 @@ model AlunoNaTurma {
   turma Turma   @relation(fields: [turmaId], references: [id])
 
   @@unique([alunoId, turmaId])
+  @@index([tenantId])
   @@map("aluno_na_turma")
 }
 
@@ -176,24 +183,25 @@ model Avaliacao {
   descricao String?
   data      DateTime
 
-  turma    Turma     @relation(fields: [turmaId], references: [id])
+  turma Turma @relation(fields: [turmaId], references: [id])
   questoes Questao[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([tenantId])
   @@map("avaliacoes")
 }
 
 model Questao {
-  id              Int      @id @default(autoincrement())
+  id              Int @id @default(autoincrement())
   avaliacaoId     Int
   texto           String
   peso            Float
   opcoes          String[]
   respostaCorreta String
 
-  avaliacao Avaliacao  @relation(fields: [avaliacaoId], references: [id])
+  avaliacao Avaliacao @relation(fields: [avaliacaoId], references: [id])
   respostas Resposta[]
 
   createdAt DateTime @default(now())
@@ -202,7 +210,7 @@ model Questao {
 }
 
 model Resposta {
-  id        Int    @id @default(autoincrement())
+  id        Int @id @default(autoincrement())
   questaoId Int
   alunoId   Int
   valor     String
