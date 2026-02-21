@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRespostaDto } from './dto/create-resposta.dto';
 import { UpdateRespostaDto } from './dto/update-resposta.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -10,79 +10,42 @@ export class RespostaService {
   ) { }
 
   async create(createRespostaDto: CreateRespostaDto) {
-    const resposta = await this.prisma.resposta.create({
-      data: createRespostaDto,
-    });
-
-    return {
-      message: 'Resposta criada com sucesso',
-      data: resposta,
-    }
+    return this.prisma.resposta.create({ data: createRespostaDto });
   }
 
   async findAll() {
-   const respostas = await this.prisma.resposta.findMany({
-    include: {
-      questao: true
+   return this.prisma.resposta.findMany({ include: { questao: true } });
+  }
+
+  private async findByIdOrFail(id: number) {
+    const resposta = await this.prisma.resposta.findUnique({ where: { id } });
+
+    if (!resposta) {
+      throw new NotFoundException('Resposta não encontrada');
     }
-   });
-   
-   return {
-    message: 'Respostas encontradas com sucesso',
-    data: respostas,
-   }
+
+    return resposta;
   }
 
   async findOne(id: number) {
-    const resposta = await this.prisma.resposta.findUnique({
-      where: {
-        id
-      },
-    });
-
-    if (!resposta) {
-      throw new NotFoundException('Resposta não encontrada');
-    }
-
-    return {
-      message: 'Resposta encontrada com sucesso',
-      data: resposta,
-    };
+    return this.findByIdOrFail(id);
   }
 
   async update(id: number, updateRespostaDto: UpdateRespostaDto) {
-    const resposta = await this.prisma.resposta.findUnique({
-      where: {
-        id
-      },
-    });
-
-    if (!resposta) {
-      throw new NotFoundException('Resposta não encontrada');
-    }
+    const resposta = await this.findByIdOrFail(id);
 
     if (Object.keys(updateRespostaDto).length === 0) {
-      throw new NotFoundException('Nenhum campo para atualizar');
+      throw new BadRequestException('Nenhum campo para atualizar');
     }
 
-    const updatedResposta = await this.prisma.resposta.update({
-      where: { id: resposta.id },
-      data: updateRespostaDto,
-    });
-
-    return {
-      message: 'Resposta atualizada com sucesso',
-      data: updatedResposta,
-    };
+    return this.prisma.resposta.update({ where: { id: resposta.id }, data: updateRespostaDto });
   }
 
   async remove(id: number) {
-    await this.prisma.resposta.delete({
-      where: { id },
-    });
+    const resposta = await this.findByIdOrFail(id);
 
-    return {
-      message: 'Resposta removida com sucesso',
-    };
+    await this.prisma.resposta.delete({ where: { id: resposta.id } });
+
+    return null;
   }
 }

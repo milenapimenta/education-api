@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCursoDto } from './dto/create-curso.dto';
 import { UpdateCursoDto } from './dto/update-curso.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -8,21 +8,16 @@ import { PaginationService } from 'src/common/pagination/pagination.service';
 export class CursoService {
   constructor(
     private readonly prisma: PrismaService,
-    private pagination: PaginationService
+    private readonly pagination: PaginationService
   ) {}
 
   async create(createCursoDto: CreateCursoDto, tenantId: number) {
-    const curso = await this.prisma.curso.create({
+    return this.prisma.curso.create({
       data: {
         ...createCursoDto,
         tenantId,
       },
     });
-
-    return {
-      message: 'Curso criado com sucesso!',
-      data: curso,
-    };
   }
 
   async findAll(tenantId: number, page: number = 1, limit: number = 10) {
@@ -39,74 +34,36 @@ export class CursoService {
       },
     }) 
   }
-
-  async findOne(id: number, tenantId: number) {
-    const curso = await this.prisma.curso.findFirst({
-      where: {
-        id,
-        tenantId,
-        deletedAt: null,
-      },
-    });
-
+  
+  private async findByIdOrFail(id: number, tenantId: number) {
+    const curso = await this.prisma.curso.findFirst({ where: { id, tenantId, deletedAt: null } });
+    
     if (!curso) {
       throw new NotFoundException('Curso não encontrado para este tenant');
     }
-
-    return {
-      message: 'Curso encontrado com sucesso!',
-      data: curso,
-    };
+    
+    return curso;
   }
 
-  async update(id: number, tenantId: number, updateCursoDto: UpdateCursoDto) {
-    const curso = await this.prisma.curso.findFirst({
-      where: {
-        id,
-        tenantId,
-        deletedAt: null,
-      },
-    });
+  async findOne(id: number, tenantId: number) {
+    return this.findByIdOrFail(id, tenantId);
+  }
 
-    if (!curso) {
-      throw new NotFoundException('Curso não encontrado');
-    }
-
+  async update(id: number, updateCursoDto: UpdateCursoDto, tenantId: number) {
+    const curso = await this.findByIdOrFail(id, tenantId);
+    
     if (Object.keys(updateCursoDto).length === 0) {
-      throw new NotFoundException('Nenhum campo para atualizar');
+      throw new BadRequestException('Nenhum campo para atualizar');
     }
-
-    const cursoAtualizado = await this.prisma.curso.update({
-      where: { id: curso.id },
-      data: updateCursoDto,
-    });
-
-    return {
-      message: 'Curso atualizado com sucesso!',
-      data: cursoAtualizado,
-    };
+    
+    return this.prisma.curso.update({ where: { id: curso.id }, data: updateCursoDto });
   }
 
   async remove(id: number, tenantId: number) {
-    const curso = await this.prisma.curso.findFirst({
-      where: {
-        id,
-        tenantId,
-        deletedAt: null,
-      },
-    });
-
-    if (!curso) {
-      throw new NotFoundException('Curso não encontrado');
-    }
-
-    await this.prisma.curso.update({
-      where: { id: curso.id },
-      data: { deletedAt: new Date() },
-    });
-
-    return {
-      message: 'Curso removido com sucesso!',
-    };
+    const curso = await this.findByIdOrFail(id, tenantId);
+    
+    await this.prisma.curso.update({ where: { id: curso.id }, data: { deletedAt: new Date() } });
+    
+    return null;
   }
 }

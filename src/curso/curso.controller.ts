@@ -65,7 +65,7 @@ export class CursoController {
     @Body() updateCursoDto: UpdateCursoDto,
     @Req() req: TenantRequest,
   ) {
-    return this.cursoService.update(+id, req.tenantId, updateCursoDto);
+    return this.cursoService.update(+id, updateCursoDto, req.tenantId);
   }
 
   @ApiHeader({

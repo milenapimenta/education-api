@@ -8,17 +8,12 @@ export class RoleService {
   constructor(private readonly prisma: PrismaService) { }
 
   async create(createRoleDto: CreateRoleDto, tenantId: number) {
-    const role = await this.prisma.role.create({
+    return this.prisma.role.create({
       data: {
         tenantId,
         ...createRoleDto,
       },
     });
-
-    return {
-      message: 'Role criada com sucesso',
-      data: role,
-    };
   }
 
   async findAll(tenantId: number) {
@@ -31,13 +26,8 @@ export class RoleService {
     return roles;
   }
 
-  async findOne(id: number, tenantId: number) {
-    const role = await this.prisma.role.findFirst({
-      where: {
-        id,
-        tenantId
-      },
-    });
+  private async findByIdOrFail(id: number, tenantId: number) {
+    const role = await this.prisma.role.findFirst({ where: { id, tenantId } });
 
     if (!role) {
       throw new NotFoundException('Role não encontrada para este tenant');
@@ -46,49 +36,26 @@ export class RoleService {
     return role;
   }
 
+  async findOne(id: number, tenantId: number) {
+    return this.findByIdOrFail(id, tenantId);
+  }
+
 
   async update(id: number, dto: UpdateRoleDto, tenantId: number) {
-    const role = await this.prisma.role.findFirst({
-      where: {
-        id,
-        tenantId,
-      },
-    });
-
-    if (!role) {
-      throw new NotFoundException('Role não encontrada para este tenant');
-    }
+    const role = await this.findByIdOrFail(id, tenantId);
 
     if (Object.keys(dto).length === 0) {
       throw new BadRequestException('Nenhum campo para atualizar');
     }
 
-    return this.prisma.role.update({
-      where: { id: role.id },
-      data: dto,
-    });
+    return this.prisma.role.update({ where: { id: role.id }, data: dto });
   }
 
   async remove(id: number, tenantId: number) {
-    const role = await this.prisma.role.findFirst({
-      where: {
-        id,
-        tenantId,
-      },
-    });
+    const role = await this.findByIdOrFail(id, tenantId);
 
-    if (!role) {
-      throw new NotFoundException('Role não encontrada para este tenant');
-    }
+    await this.prisma.role.delete({ where: { id: role.id } });
 
-    await this.prisma.role.delete({
-      where: {
-        id: role.id,
-      },
-    });
-
-    return {
-      message: 'Role removida com sucesso',
-    };
+    return null;
   }
 }

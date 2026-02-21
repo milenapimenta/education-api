@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTurmaDto } from './dto/create-turma.dto';
 import { UpdateTurmaDto } from './dto/update-turma.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -8,21 +8,16 @@ import { PaginationService } from 'src/common/pagination/pagination.service';
 export class TurmaService {
   constructor(
     private readonly prisma: PrismaService,
-    private pagination: PaginationService,
+    private readonly pagination: PaginationService,
   ) { }
 
   async create(createTurmaDto: CreateTurmaDto, tenantId: number) {
-    const turma = await this.prisma.turma.create({
+    return this.prisma.turma.create({
       data: {
         ...createTurmaDto,
         tenantId,
       },
     });
-
-    return {
-      message: 'Turma criada com sucesso',
-      data: turma,
-    }
   }
 
   async findAll(tenantId: number, page: number = 1, limit: number = 10) {
@@ -38,73 +33,35 @@ export class TurmaService {
     })
   }
 
-  async findOne(id: number, tenantId: number) {
-    const turma = await this.prisma.turma.findFirst({
-      where: {
-        id,
-        tenantId,
-        deletedAt: null,
-      },
-    });
+  private async findByIdOrFail(id: number, tenantId: number) {
+    const turma = await this.prisma.turma.findFirst({ where: { id, tenantId, deletedAt: null } });
 
     if (!turma) {
       throw new NotFoundException('Turma não encontrada');
     }
 
-    return {
-      message: 'Turma encontrada com sucesso',
-      data: turma,
-    };
+    return turma;
+  }
+
+  async findOne(id: number, tenantId: number) {
+    return this.findByIdOrFail(id, tenantId);
   }
 
   async update(id: number, updateTurmaDto: UpdateTurmaDto, tenantId: number) {
-    const turma = await this.prisma.turma.findFirst({
-      where: {
-        id,
-        tenantId,
-        deletedAt: null,
-      },
-    });
-
-    if (!turma) {
-      throw new NotFoundException('Turma não encontrada');
-    }
+    const turma = await this.findByIdOrFail(id, tenantId);
 
     if (Object.keys(updateTurmaDto).length === 0) {
-      throw new NotFoundException('Nenhum campo para atualizar');
+      throw new BadRequestException('Nenhum campo para atualizar');
     }
 
-    const updatedTurma = await this.prisma.turma.update({
-      where: { id: turma.id },
-      data: updateTurmaDto,
-    });
-
-    return {
-      message: 'Turma atualizada com sucesso',
-      data: updatedTurma,
-    };
+    return this.prisma.turma.update({ where: { id: turma.id }, data: updateTurmaDto });
   }
 
   async remove(id: number, tenantId: number) {
-    const turma = await this.prisma.turma.findFirst({
-      where: {
-        id,
-        tenantId,
-        deletedAt: null,
-      },
-    });
+    const turma = await this.findByIdOrFail(id, tenantId);
 
-    if (!turma) {
-      throw new NotFoundException('Turma não encontrada');
-    }
+    await this.prisma.turma.update({ where: { id: turma.id }, data: { deletedAt: new Date() } });
 
-    await this.prisma.turma.update({
-      where: { id: turma.id },
-      data: { deletedAt: new Date() },
-    });
-
-    return {
-      message: 'Turma removida com sucesso',
-    };
+    return null;
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAvaliacaoDto } from './dto/create-avaliacao.dto';
 import { UpdateAvaliacaoDto } from './dto/update-avaliacao.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -12,17 +12,7 @@ export class AvaliacaoService {
   ) { }
 
   async create(createAvaliacaoDto: CreateAvaliacaoDto, tenantId: number) {
-    const avaliacao = await this.prisma.avaliacao.create({
-      data: {
-        ...createAvaliacaoDto,
-        tenantId,
-      },
-    });
-
-    return {
-      message: 'Avaliação criada com sucesso',
-      data: avaliacao,
-    }
+    return this.prisma.avaliacao.create({ data: { ...createAvaliacaoDto, tenantId } });
   }
 
   async findAll(tenantId: number, page: number = 1, limit: number = 10) {
@@ -37,61 +27,35 @@ export class AvaliacaoService {
     })
   }
 
-  async findOne(id: number, tenantId: number) {
-    const avaliacao = await this.prisma.avaliacao.findFirst({
-      where: {
-        id,
-        tenantId
-      },
-    });
+  private async findByIdOrFail(id: number, tenantId: number) {
+    const avaliacao = await this.prisma.avaliacao.findFirst({ where: { id, tenantId } });
 
     if (!avaliacao) {
       throw new NotFoundException('Avaliação não encontrada');
     }
 
-    return {
-      message: 'Avaliação encontrada com sucesso',
-      data: avaliacao,
-    };
+    return avaliacao;
+  }
+
+  async findOne(id: number, tenantId: number) {
+    return this.findByIdOrFail(id, tenantId);
   }
 
   async update(id: number, updateAvaliacaoDto: UpdateAvaliacaoDto, tenantId: number) {
-    const avaliacao = await this.prisma.avaliacao.findFirst({
-      where: {
-        id,
-        tenantId
-      },
-    });
-
-    if (!avaliacao) {
-      throw new NotFoundException('Avaliação não encontrada');
-    }
+    const avaliacao = await this.findByIdOrFail(id, tenantId);
 
     if (Object.keys(updateAvaliacaoDto).length === 0) {
-      throw new NotFoundException('Nenhum campo para atualizar');
+      throw new BadRequestException('Nenhum campo para atualizar');
     }
 
-    const updatedAvaliacao = await this.prisma.avaliacao.update({
-      where: { id: avaliacao.id },
-      data: updateAvaliacaoDto,
-    });
-
-    return {
-      message: 'Avaliação atualizada com sucesso',
-      data: updatedAvaliacao,
-    };
+    return this.prisma.avaliacao.update({ where: { id: avaliacao.id }, data: updateAvaliacaoDto });
   }
 
   async remove(id: number, tenantId: number) {
-    await this.prisma.avaliacao.delete({
-      where: {
-        id,
-        tenantId
-      },
-    });
+    const avaliacao = await this.findByIdOrFail(id, tenantId);
 
-    return {
-      message: 'Avaliação removida com sucesso',
-    };
+    await this.prisma.avaliacao.delete({ where: { id: avaliacao.id } });
+
+    return null;
   }
 }

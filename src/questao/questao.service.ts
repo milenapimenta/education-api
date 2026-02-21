@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateQuestaoDto } from './dto/create-questao.dto';
 import { UpdateQuestaoDto } from './dto/update-questao.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -10,81 +10,42 @@ export class QuestaoService {
   ) { }
 
   async create(createQuestaoDto: CreateQuestaoDto) {
-    const questao = await this.prisma.questao.create({
-      data: createQuestaoDto
-    });
-
-    return {
-      message: 'Questão criada com sucesso',
-      data: questao,
-    }
+    return this.prisma.questao.create({ data: createQuestaoDto });
   }
 
   async findAll() {
-    const questoes = await this.prisma.questao.findMany({
-      include: {
-        avaliacao: true,
-      },
-    });
+    return this.prisma.questao.findMany({ include: { avaliacao: true } });
+  }
 
-    return {
-      message: 'Questões encontradas com sucesso',
-      data: questoes,
-    };
+  private async findByIdOrFail(id: number) {
+    const questao = await this.prisma.questao.findFirst({ where: { id } });
+
+    if (!questao) {
+      throw new NotFoundException('Questão não encontrada');
+    }
+
+    return questao;
   }
 
   async findOne(id: number) {
-    const questao = await this.prisma.questao.findFirst({
-      where: {
-        id
-      },
-    });
-
-    if (!questao) {
-      throw new NotFoundException('Questão não encontrada');
-    }
-
-    return {
-      message: 'Questão encontrada com sucesso',
-      data: questao,
-    };
+    return this.findByIdOrFail(id);
   }
 
   async update(id: number, updateQuestaoDto: UpdateQuestaoDto) {
-    const questao = await this.prisma.questao.findFirst({
-      where: {
-        id
-      },
-    });
-
-    if (!questao) {
-      throw new NotFoundException('Questão não encontrada');
-    }
+    const questao = await this.findByIdOrFail(id);
 
     if (Object.keys(updateQuestaoDto).length === 0) {
-      throw new NotFoundException('Nenhum campo para atualizar');
+      throw new BadRequestException('Nenhum campo para atualizar');
     }
 
-    const updatedQuestao = await this.prisma.questao.update({
-      where: { id: questao.id },
-      data: updateQuestaoDto,
-    });
-
-    return {
-      message: 'Questão atualizada com sucesso',
-      data: updatedQuestao,
-    };
+    return this.prisma.questao.update({ where: { id: questao.id }, data: updateQuestaoDto });
   }
 
   async remove(id: number) {
-    await this.prisma.questao.delete({
-      where: {
-        id
-      },
-    });
+    const questao = await this.findByIdOrFail(id);
 
-    return {
-      message: 'Questão removida com sucesso',
-    };
+    await this.prisma.questao.delete({ where: { id: questao.id } });
+
+    return null;
   }
 }

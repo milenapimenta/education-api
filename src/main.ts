@@ -3,11 +3,16 @@ import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 
 dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  app.setGlobalPrefix('api/v1');
+
+  app.useGlobalInterceptors(new ResponseInterceptor());
 
   const config = new DocumentBuilder()
     .setTitle('Education API')
@@ -19,6 +24,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('swagger', app, document);
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 5000);
 }
 bootstrap();

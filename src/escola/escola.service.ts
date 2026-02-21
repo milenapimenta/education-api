@@ -12,14 +12,9 @@ export class EscolaService {
   ) { }
 
   async create(createEscolaDto: CreateEscolaDto) {
-    const escola = await this.prisma.escola.create({
-      data: createEscolaDto
+    return this.prisma.escola.create({
+      data: createEscolaDto,
     });
-
-    return {
-      message: 'Escola criada com sucesso',
-      data: escola
-    };
   }
 
   async findAll(page: number = 1, limit: number = 10) {
@@ -35,77 +30,36 @@ export class EscolaService {
       }
     })
   }
-
-  async findOne(id: number) {
-    const escola = await this.prisma.escola.findFirst({
-      where: {
-        id,
-        deletedAt: null
-      }
-    });
-
+  
+  private async findByIdOrFail(id: number) {
+    const escola = await this.prisma.escola.findFirst({ where: { id, deletedAt: null } });
+    
     if (!escola) {
       throw new NotFoundException('Escola não encontrada');
     }
+    
+    return escola;
+  }
 
-    return {
-      message: 'Escola encontrada com sucesso',
-      data: escola
-    };
+  async findOne(id: number) {
+    const escola = await this.findByIdOrFail(id);
   }
 
   async update(id: number, updateEscolaDto: UpdateEscolaDto) {
-    const escola = await this.prisma.escola.findFirst({
-      where: {
-        id,
-        deletedAt: null
-      }
-    });
-
-    if (!escola) {
-      throw new NotFoundException('Escola não encontrada');
-    }
-
+    const escola = await this.findByIdOrFail(id);
+    
     if (Object.keys(updateEscolaDto).length === 0) {
       throw new BadRequestException('Nenhum campo para atualizar');
     }
-
-    const updatedEscola = await this.prisma.escola.update({
-      where: {
-        id
-      },
-      data: updateEscolaDto
-    });
-
-    return {
-      message: 'Escola atualizada com sucesso',
-      data: updatedEscola
-    };
+    
+    return this.prisma.escola.update({ where: { id }, data: updateEscolaDto });
   }
 
   async remove(id: number) {
-    const escola = await this.prisma.escola.findFirst({
-      where: {
-        id,
-        deletedAt: null
-      }
-    });
-
-    if(!escola) {
-      throw new NotFoundException('Escola não encontrada');
-    }
-
-    await this.prisma.escola.update({
-      where: {
-        id
-      },
-      data: {
-        deletedAt: new Date()
-      }
-    });
-
-    return {
-      message: 'Escola removida com sucesso'
-    };
+    const escola = await this.findByIdOrFail(id);
+    
+    await this.prisma.escola.update({ where: { id }, data: { deletedAt: new Date() } });
+    
+    return null;
   }
 }

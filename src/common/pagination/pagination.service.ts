@@ -15,35 +15,35 @@ interface PaginateOptions<T> {
 
 @Injectable()
 export class PaginationService {
-    async paginate<T>({
-        model,
+  async paginate<T>({
+    model,
+    where,
+    page = 1,
+    limit = 10,
+    orderBy = { createdAt: 'desc' },
+    select,
+  }: PaginateOptions<T>) {
+    const skip = (page - 1) * limit;
+
+    const [total, data] = await Promise.all([
+      model.count({ where }),
+      model.findMany({
         where,
-        page = 1,
-        limit = 10,
-        orderBy = { createdAt: 'desc' },
-        select,
-    }: PaginateOptions<T>) {
-        const skip = (page - 1) * limit;
+        skip,
+        take: limit,
+        orderBy,
+        ...(select && { select }),
+      }),
+    ]);
 
-        const [total, data] = await Promise.all([
-            model.count({ where }),
-            model.findMany({
-                where,
-                skip,
-                take: limit,
-                orderBy,
-                ...(select && { select }),
-            }),
-        ]);
-
-        return {
-            pagination: {
-                total,
-                page,
-                limit,
-                pages: Math.ceil(total / limit),
-            },
-            data: data,
-        }
-    }
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit),
+      },
+    };
+  }
 }
