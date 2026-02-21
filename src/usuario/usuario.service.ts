@@ -8,8 +8,8 @@ import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PaginationService } from 'src/common/pagination/pagination.service';
 import { UploadService } from 'src/common/upload/upload.service';
-import { EmailService } from 'src/email/email.service';
 import * as bcrypt from 'bcrypt';
+import { EmailProducerService } from 'src/email/email.producer.service';
 
 @Injectable()
 export class UsuarioService {
@@ -17,7 +17,7 @@ export class UsuarioService {
     private readonly prisma: PrismaService,
     private readonly pagination: PaginationService,
     private readonly uploadService: UploadService,
-    private readonly emailService: EmailService,
+    private readonly emailService: EmailProducerService,
   ) { }
 
   async create(
@@ -44,9 +44,12 @@ export class UsuarioService {
       },
     });
 
-    this.emailService
-      .enviarBoasVindas(usuario.email, usuario.nome)
-      .catch(() => null);
+
+    await this.emailService.sendEmail({
+      to: usuario.email,
+      subject: 'Boas vindas à Education API',
+      body: `<h1>Bem vindo, ${usuario.nome}!</h1><p>Seu cadastro foi realizado com sucesso.</p>`,
+    });
 
     return usuario;
   }

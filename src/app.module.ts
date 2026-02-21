@@ -3,8 +3,6 @@ import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { APP_GUARD, Reflector } from '@nestjs/core';
-import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
@@ -18,10 +16,10 @@ import { AvaliacaoModule } from './avaliacao/avaliacao.module';
 import { QuestaoModule } from './questao/questao.module';
 import { RespostaModule } from './resposta/resposta.module';
 import { UploadModule } from './common/upload/upload.module';
-import { EmailModule } from './email/email.module';
 
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { TenantAuthGuard } from './auth/guards/tenant-auth.guard';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -45,28 +43,6 @@ import { TenantAuthGuard } from './auth/guards/tenant-auth.guard';
     RespostaModule,
     UploadModule,
     EmailModule,
-
-    MailerModule.forRoot({
-      transport: {
-        host: 'smtp.ethereal.email',
-        port: 587,
-        secure: false,
-        auth: {
-          user: process.env.ETHEREAL_USER,
-          pass: process.env.ETHEREAL_PASS,
-        },
-      },
-      defaults: {
-        from: '"Minha API" <no-reply@teste.com>',
-      },
-      template: {
-        dir: join(process.cwd(), 'templates'),
-        adapter: new HandlebarsAdapter(),
-        options: {
-          strict: true,
-        },
-      },
-    }),
   ],
 
   providers: [
