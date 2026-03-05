@@ -42,6 +42,8 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 5000);
 
+  app.set('trust proxy', true)
+
   console.log('HTTP running');
   console.log('RabbitMQ consumer running');
 }

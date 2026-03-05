@@ -20,6 +20,10 @@ import { UploadModule } from './common/upload/upload.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { TenantAuthGuard } from './auth/guards/tenant-auth.guard';
 import { EmailModule } from './email/email.module';
+import { RedisService } from './common/redis/redis.service';
+import { RedisThrottlerGuard } from './common/redis/redis-throttler.guard';
+import { RedisModule } from './common/redis/redis.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -29,7 +33,14 @@ import { EmailModule } from './email/email.module';
       rootPath: join(process.cwd(), 'public'),
       serveRoot: '/public',
     }),
-
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60,
+          limit: 20,
+        },
+      ]
+    }),
     PrismaModule,
     AuthModule,
     UsuarioModule,
@@ -43,12 +54,15 @@ import { EmailModule } from './email/email.module';
     RespostaModule,
     UploadModule,
     EmailModule,
+    RedisModule,
   ],
 
   providers: [
+    RedisService,
     Reflector,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: TenantAuthGuard },
+    { provide: APP_GUARD, useClass: RedisThrottlerGuard },
   ],
 })
-export class AppModule {}
+export class AppModule { }

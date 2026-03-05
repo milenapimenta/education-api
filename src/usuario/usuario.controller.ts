@@ -6,8 +6,8 @@ import type { TenantRequest } from 'src/common/interfaces/tenant-request.interfa
 import { PaginationQueryDto } from 'src/common/pagination/dtos/pagination-query.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from 'multer.config';
-import { ImageMimeTypeValidator } from 'src/validators/image-mimetype.validator';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiParam } from '@nestjs/swagger';
+import { ImageMimeTypeValidator } from 'src/common/validators/image-mimetype.validator';
 
 @ApiBearerAuth()
 @Controller('usuario')
