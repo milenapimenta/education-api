@@ -40,12 +40,9 @@ async function bootstrap() {
 
   await app.startAllMicroservices();
 
-  await app.listen(process.env.PORT ?? 5000);
+  await app.listen(process.env.PORT ?? 3000);
 
   app.set('trust proxy', true)
-
-  console.log('HTTP running');
-  console.log('RabbitMQ consumer running');
 }
 
 bootstrap();

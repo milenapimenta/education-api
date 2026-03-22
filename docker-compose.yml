@@ -1,0 +1,45 @@
+services:
+  api:
+    build: .
+    image: api
+    container_name: education_api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    command: npm run start:dev
+
+  postgres:
+    image: postgres:16
+    container_name: education_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: milena
+      POSTGRES_PASSWORD: 140
+      POSTGRES_DB: education_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: education_redis
+    ports:
+      - "6385:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: education_rabbitmq
+    ports:
+      - "5674:5672"
+      - "15674:15672"
+
+volumes:
+  postgres_data:

@@ -1,19 +1,27 @@
-import { Injectable, OnModuleInit } from '@nestjs/common'
-import { createClient, RedisClientType } from 'redis'
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { createClient } from 'redis';
 
 @Injectable()
 export class RedisService implements OnModuleInit {
-  private client: RedisClientType
+  private client;
 
   async onModuleInit() {
     this.client = createClient({
-      url: 'redis://localhost:6379',
-    })
+      socket: {
+        host: process.env.REDIS_HOST || 'redis',
+        port: Number(process.env.REDIS_PORT) || 6379,
+      },
+    });
 
-    await this.client.connect()
+    this.client.on('error', (err) => {
+      console.error('Redis error:', err);
+    });
+
+    await this.client.connect();
+    console.log('Redis connected');
   }
 
   getClient() {
-    return this.client
+    return this.client;
   }
 }
